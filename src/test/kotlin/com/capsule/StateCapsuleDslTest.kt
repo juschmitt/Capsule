@@ -36,7 +36,9 @@ class StateCapsuleDslTest {
         transitions {
             Action.InsertCoin runs {
                 if (locked && candies > 0) {
-                    copy(locked = false, coins = coins + 1)()
+                    copy(locked = false, coins = coins + 1) also
+                            { _: Action -> println("CandyMachine unlocked.") } and
+                            { println("You can now turn the knob to get 1 Candy.") }
                 } else {
                     this()
                 }
@@ -46,7 +48,7 @@ class StateCapsuleDslTest {
                 if (!locked && candies > 0) {
                     copy(locked = true, candies = candies - 1) also
                             { _: Action -> println("You can now collect your candy.") } and
-                            { println("") }
+                            { println("CandyMachine locked. Insert another Coin to unlock.") }
                 } else {
                     this()
                 }
