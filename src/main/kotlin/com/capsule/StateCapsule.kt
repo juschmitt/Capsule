@@ -1,3 +1,5 @@
+package com.capsule
+
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,10 +36,11 @@ internal class StateCapsuleImpl<State, Action>(
         get() = _state
 
     override suspend fun run(action: Action) {
-        transitions[action]?.run(_state.value, action) ?: throw Exception("No Transition found for Action $action in ${_state.value}")
+        transitions[action]?.run(_state.value, action)
+            ?: throw Exception("No Transition found for Action $action in ${_state.value}")
     }
 
-    private suspend fun Transition<State, Action>.run(state: State, action:Action) {
+    private suspend fun Transition<State, Action>.run(state: State, action: Action) {
         when (val effect = invoke(state, action)) {
             is Effect.Impure -> {
                 _state.value = effect.state

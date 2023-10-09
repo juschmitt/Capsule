@@ -1,4 +1,4 @@
-
+package com.capsule
 
 fun <State, Action> capsule(
     block: StateCapsuleBuilder<State, Action>.() -> Unit

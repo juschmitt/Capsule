@@ -1,8 +1,12 @@
-import kotlinx.coroutines.test.runTest
+package com.capsule
+
 import app.cash.turbine.test
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
-/*
+class StateCapsuleTest {
+
+    /*
     Rules:
     - Inserting a Coin Unlocks the CandyMachine and increases the coins by 1
     - Knob can be turned when at least 1 candy there and unlocked
@@ -10,14 +14,14 @@ import kotlin.test.Test
     - turning the knob in locked state does nothing
     - turning the knob in unlocked state releases 1 candy and locks again
      */
-class StateCapsuleDslTest {
-    private data class CandyMachineState(
+
+    data class CandyMachineState(
         val locked: Boolean,
         val candies: Int,
         val coins: Int,
     )
 
-    private sealed interface Action {
+    sealed interface Action {
         object InsertCoin : Action
         object TurnKnob : Action
         object RefillCandies : Action
@@ -29,29 +33,27 @@ class StateCapsuleDslTest {
         coins = 0,
     )
 
-    private val capsule = capsule<CandyMachineState, Action> {
-        initial { initialState }
-        transitions {
-            Action.InsertCoin runs {
+    private val capsule = StateCapsuleImpl(
+        initialState = initialState,
+        transitions = mapOf(
+            Action.InsertCoin to {
                 if (locked && candies > 0) {
                     copy(locked = false, coins = coins + 1)()
                 } else {
-                    this()
+                    only()
                 }
-            }
-
-            Action.TurnKnob runs {
+            },
+            Action.TurnKnob to {
                 if (!locked && candies > 0) {
                     copy(locked = true, candies = candies - 1) also
                             { _: Action -> println("You can now collect your candy.") } and
                             { println("") }
                 } else {
-                    this()
+                    only()
                 }
             }
-        }
-    }
-
+        )
+    )
 
     @Test
     fun `statemachine contains initial state after creation`() = runTest {
